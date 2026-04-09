@@ -190,6 +190,49 @@ $result = pg_query($conn, "SELECT * FROM products ORDER BY created_at DESC");
         }
         input[type="file"] { display: none; }
 
+        /* Image preview */
+        .img-preview-wrap {
+            margin-top: 10px;
+            display: none;
+            position: relative;
+            width: 100px;
+            height: 100px;
+        }
+        .img-preview-wrap.visible { display: block; }
+        .img-preview {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 12px;
+            border: 2px solid var(--blush-mid);
+            box-shadow: 0 4px 16px rgba(169,93,104,0.15);
+            display: block;
+            animation: pop-in 0.25s cubic-bezier(0.34,1.56,0.64,1);
+        }
+        @keyframes pop-in {
+            from { transform: scale(0.7); opacity: 0; }
+            to   { transform: scale(1);   opacity: 1; }
+        }
+        .img-preview-remove {
+            position: absolute;
+            top: -7px; right: -7px;
+            width: 22px; height: 22px;
+            background: var(--rose-deep);
+            color: #fff;
+            border: none;
+            border-radius: 50%;
+            font-size: 13px;
+            line-height: 1;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 2px 6px rgba(169,93,104,0.3);
+            transition: background 0.15s, transform 0.15s;
+        }
+        .img-preview-remove:hover {
+            background: var(--mauve);
+            transform: scale(1.1);
+        }
+
         /* Submit button */
         .btn-primary {
             display: inline-flex;
@@ -463,12 +506,15 @@ $result = pg_query($conn, "SELECT * FROM products ORDER BY created_at DESC");
 
                 <div class="form-group">
                     <label for="image">Product Image</label>
-                    <label class="file-label" for="image">
+                    <label class="file-label" for="image" id="file-drop-label">
                         <span class="file-icon">🌸</span>
                         <span id="file-name-display">Click to choose an image…</span>
                     </label>
-                    <input type="file" id="image" name="image" accept="image/*"
-                        onchange="document.getElementById('file-name-display').textContent = this.files[0]?.name || 'Click to choose an image…'">
+                    <input type="file" id="image" name="image" accept="image/*" onchange="handleImagePreview(this)">
+                    <div class="img-preview-wrap" id="preview-wrap">
+                        <img class="img-preview" id="img-preview" src="" alt="Preview">
+                        <button type="button" class="img-preview-remove" onclick="clearImagePreview()" title="Remove">✕</button>
+                    </div>
                 </div>
 
                 <div class="form-group full">
@@ -561,6 +607,45 @@ $result = pg_query($conn, "SELECT * FROM products ORDER BY created_at DESC");
 <footer>
     ✦ JoyMart Admin &nbsp;·&nbsp; Made with love
 </footer>
+
+<script>
+    function handleImagePreview(input) {
+        const file = input.files[0];
+        const wrap = document.getElementById('preview-wrap');
+        const preview = document.getElementById('img-preview');
+        const label = document.getElementById('file-drop-label');
+        const nameDisplay = document.getElementById('file-name-display');
+
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = e => {
+                preview.src = e.target.result;
+                wrap.classList.add('visible');
+                nameDisplay.textContent = file.name;
+                label.style.borderColor = 'var(--rose)';
+                label.style.background = 'var(--blush)';
+            };
+            reader.readAsDataURL(file);
+        } else {
+            clearImagePreview();
+        }
+    }
+
+    function clearImagePreview() {
+        const input = document.getElementById('image');
+        const wrap = document.getElementById('preview-wrap');
+        const preview = document.getElementById('img-preview');
+        const label = document.getElementById('file-drop-label');
+        const nameDisplay = document.getElementById('file-name-display');
+
+        input.value = '';
+        preview.src = '';
+        wrap.classList.remove('visible');
+        nameDisplay.textContent = 'Click to choose an image…';
+        label.style.borderColor = '';
+        label.style.background = '';
+    }
+</script>
 
 </body>
 </html>
