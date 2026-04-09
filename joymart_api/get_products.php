@@ -1,5 +1,4 @@
 <?php
-
 header("Content-Type: application/json");
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
@@ -9,35 +8,38 @@ include "db.php";
 
 // SQL query
 $sql = "SELECT * FROM products ORDER BY created_at DESC";
-$result = $conn->query($sql);
+$result = pg_query($conn, $sql);
 
 // Check for SQL errors
 if (!$result) {
     die(json_encode([
         "error" => true,
-        "message" => "SQL Error: " . $conn->error
+        "message" => "SQL Error: " . pg_last_error($conn)
     ]));
 }
 
 $products = [];
 
-if ($result->num_rows > 0) {
-    while ($row = $result->fetch_assoc()) {
-        $imageName = !empty($row['image']) ? $row['image'] : "default.png";
-        $imageUrl = "https://joymartweed.infinityfreeapp.com/joymart_api/uploads/" . $imageName;
+while ($row = pg_fetch_assoc($result)) {
+    // Use image if exists, otherwise default
+    $imageName = !empty($row['image']) ? $row['image'] : "default.png";
+    
+    // Update image URL if needed
+    $imageUrl = "https://joymart-backend.onrender.com/uploads/" . $imageName;
 
-        $products[] = [
-            "id" => (int)$row['id'],
-            "title" => $row['name'],
-            "price" => (float)$row['price'],
-            "description" => $row['description'],
-            "image" => $imageUrl,
-            "category" => "General"
-        ];
-    }
+    $products[] = [
+        "id" => (int)$row['id'],
+        "title" => $row['title'],            // Make sure column names match your PostgreSQL table
+        "price" => (float)$row['price'],
+        "description" => isset($row['description']) ? $row['description'] : "",
+        "image" => $imageUrl,
+        "category" => isset($row['category']) ? $row['category'] : "General"
+    ];
 }
 
 // Return JSON
 echo json_encode($products);
-$conn->close();
+
+// Close connection
+pg_close($conn);
 ?>
