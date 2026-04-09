@@ -1,12 +1,15 @@
 <?php
-$host = "sql107.infinityfree.com";      // your host from InfinityFree
-$user = "if0_41562839";                 // your DB username
-$pass = "PbZQDRIFSMXRXL";                              // your DB password (leave empty if none)
-$db   = "if0_41562839_JoyMartWeed";     // your DB name
 
-$conn = new mysqli($host, $user, $pass, $db);
+$host = "dpg-d7blgl1r0fns73bkoun0-a";
+$port = "5432";
+$db   = "joymart_db";
+$user = "joymart_db_user";
+$pass = "fX7r6uVICTNdimtSryN7E1kNdpR9UJ64";
 
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
+$conn = pg_connect("host=$host port=$port dbname=$db user=$user password=$pass");
+
+if (!$conn) {
+    die("Connection failed.");
 }
+
 ?>
