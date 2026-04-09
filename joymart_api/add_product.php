@@ -1,50 +1,55 @@
 <?php
 header("Content-Type: application/json");
 require __DIR__ . '/vendor/autoload.php'; // Composer autoload
-include "db.php"; // your PostgreSQL connection
+include "db.php"; // Your PostgreSQL connection
 
-use Cloudinary\Cloudinary;
+use Cloudinary\Configuration\Configuration;
 use Cloudinary\Api\Upload\UploadApi;
 
-// --- Cloudinary configuration ---
-$cloudinary = new Cloudinary([
+// -----------------------------
+// Cloudinary configuration
+// -----------------------------
+Configuration::instance([
     'cloud' => [
         'cloud_name' => 'dqwwbww9a',
         'api_key'    => '836269397159339',
-        'api_secret' => 'pIfAIto0gQMp7HTs9OGc1EmayHI',
+        'api_secret' => 'pIfAIto0gQMp7HTs9OGc1EmayHI'
     ],
     'url' => [
         'secure' => true
     ]
 ]);
 
-// --- Check required POST fields ---
-$requiredFields = ['name', 'description', 'price', 'stock'];
-foreach ($requiredFields as $field) {
-    if (!isset($_POST[$field]) || empty(trim($_POST[$field]))) {
-        echo json_encode([
-            "success" => false,
-            "message" => "Field '{$field}' is required."
-        ]);
-        exit;
-    }
+// -----------------------------
+// Validate required POST fields
+// -----------------------------
+if(!isset($_POST['name'], $_POST['description'], $_POST['price'], $_POST['stock'])) {
+    echo json_encode([
+        "success" => false,
+        "message" => "All fields (name, description, price, stock) are required."
+    ]);
+    exit;
 }
 
-// --- Sanitize and assign input ---
+// -----------------------------
+// Sanitize and prepare data
+// -----------------------------
 $title = trim($_POST['name']);
 $description = trim($_POST['description']);
 $price = floatval($_POST['price']);
 $stock = intval($_POST['stock']);
 $imageUrl = null;
 
-// --- Handle image upload ---
-if (isset($_FILES['image']) && $_FILES['image']['error'] === 0) {
+// -----------------------------
+// Upload image to Cloudinary if provided
+// -----------------------------
+if(isset($_FILES['image']) && $_FILES['image']['error'] === 0){
     try {
         $uploadResult = (new UploadApi())->upload($_FILES['image']['tmp_name'], [
             'folder' => 'joymart_products'
         ]);
         $imageUrl = $uploadResult['secure_url'];
-    } catch (\Exception $e) {
+    } catch (Exception $e) {
         echo json_encode([
             "success" => false,
             "message" => "Image upload failed: " . $e->getMessage()
@@ -52,18 +57,20 @@ if (isset($_FILES['image']) && $_FILES['image']['error'] === 0) {
         exit;
     }
 } else {
-    // optional default image if no image uploaded
+    // Optional default placeholder image
     $imageUrl = "https://res.cloudinary.com/dqwwbww9a/image/upload/vdefault/placeholder.png";
 }
 
-// --- Insert into PostgreSQL ---
+// -----------------------------
+// Insert into PostgreSQL
+// -----------------------------
 $query = "INSERT INTO products (title, description, price, stock, image) VALUES ($1, $2, $3, $4, $5)";
 $result = pg_query_params($conn, $query, [$title, $description, $price, $stock, $imageUrl]);
 
-if ($result) {
+if($result){
     echo json_encode([
         "success" => true,
-        "message" => "Product added successfully",
+        "message" => "Product added successfully.",
         "image" => $imageUrl
     ]);
 } else {
@@ -73,5 +80,7 @@ if ($result) {
     ]);
 }
 
-// Close the DB connection
+// -----------------------------
+// Close DB connection
+// -----------------------------
 pg_close($conn);
