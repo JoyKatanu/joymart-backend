@@ -563,7 +563,7 @@ $result = pg_query($conn, "SELECT * FROM products ORDER BY created_at DESC");
                 <?php
                 if ($total > 0) {
                     while ($row = pg_fetch_assoc($result)) {
-                        $image = !empty($row['image']) ? $row['image'] : "default.png";
+                        $image = !empty($row['image']) ? $row['image'] : "https://res.cloudinary.com/dqwwbww9a/image/upload/v1/default/placeholder.png";
                         $stock = (int)$row['stock'];
                         if ($stock === 0) {
                             $stockClass = 'out-stock'; $stockLabel = 'Out of stock';
@@ -578,7 +578,7 @@ $result = pg_query($conn, "SELECT * FROM products ORDER BY created_at DESC");
                         echo "<td><span class='product-desc' title='".htmlspecialchars($row['description'])."'>".htmlspecialchars($row['description'])."</span></td>";
                         echo "<td><span class='price-tag'>".number_format((float)$row['price'], 2)."</span></td>";
                         echo "<td><span class='stock-badge $stockClass'>$stockLabel</span></td>";
-                        echo "<td><img class='product-img' src='uploads/".htmlspecialchars($image)."' alt='product image' /></td>";
+                        echo "<td><img class='product-img' src='".htmlspecialchars($image)."' alt='product image' /></td>";
                         echo "<td>
                                 <div class='actions-cell'>
                                     <form action='delete_product.php' method='post' style='display:inline'>
