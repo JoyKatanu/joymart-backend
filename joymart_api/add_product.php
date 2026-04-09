@@ -1,22 +1,23 @@
 <?php
 header("Content-Type: application/json");
-require __DIR__ . '/vendor/autoload.php'; // Cloudinary
+require __DIR__ . '/vendor/autoload.php'; // Composer autoload
 include "db.php";
 
+use Cloudinary\Cloudinary;
 use Cloudinary\Configuration\Configuration;
 use Cloudinary\Api\Upload\UploadApi;
 
 // Cloudinary config
-Configuration::instance([
+$cloudinary = new Cloudinary([
     'cloud' => [
-        'cloud_name' => 'dqwwbww9a', 
-        'api_key'    => '836269397159339',    
-        'api_secret' => 'pIfAIto0gQMp7HTs9OGc1EmayHI', 
+        'cloud_name' => 'dqwwbww9a',
+        'api_key'    => '836269397159339',
+        'api_secret' => 'pIfAIto0gQMp7HTs9OGc1EmayHI',
     ],
-    'url' => ['secure' => true]
+    'url' => [
+        'secure' => true
+    ]
 ]);
-
-$cloudinary = new Cloudinary();
 
 if(isset($_POST['name'], $_POST['description'], $_POST['price'], $_POST['stock'])) {
 
